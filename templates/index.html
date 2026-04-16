@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Anonymizer</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0f0f1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        header h1 { font-size: 2.4rem; color: #e94560; margin-bottom: 8px; }
+        header p { color: #888; font-size: 1rem; }
+
+        .card {
+            background: #16213e;
+            border-radius: 16px;
+            padding: 36px;
+            width: 100%;
+            max-width: 720px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
+            margin-bottom: 12px;
+            margin-top: 28px;
+        }
+
+        .section-label:first-child { margin-top: 0; }
+
+        .file-upload {
+            border: 2px dashed #2a3a5c;
+            border-radius: 10px;
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s;
+            position: relative;
+        }
+
+        .file-upload:hover { border-color: #e94560; }
+
+        .file-upload input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .file-upload .icon { font-size: 2.2rem; margin-bottom: 8px; }
+        .file-upload .hint { color: #666; font-size: 0.9rem; }
+        .file-upload .file-name { color: #e94560; margin-top: 8px; font-weight: bold; font-size: 0.95rem; }
+
+        .style-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+        }
+
+        .style-option { position: relative; }
+
+        .style-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+        }
+
+        .style-option label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px 10px;
+            background: #0f1f3d;
+            border: 2px solid #2a3a5c;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            gap: 4px;
+        }
+
+        .style-option label .icon { font-size: 1.6rem; }
+        .style-option label .name { font-size: 0.9rem; font-weight: bold; }
+        .style-option label .desc { font-size: 0.7rem; color: #666; }
+
+        .style-option input:checked + label {
+            border-color: #e94560;
+            background: #1f0d15;
+        }
+
+        .style-option label:hover { border-color: #e94560; }
+
+        .mosaic-size-row {
+            display: none;
+            margin-top: 16px;
+            align-items: center;
+            gap: 16px;
+            background: #0f1f3d;
+            padding: 16px;
+            border-radius: 10px;
+        }
+
+        .mosaic-size-row.visible { display: flex; }
+        .mosaic-size-row label { font-size: 0.9rem; color: #aaa; white-space: nowrap; }
+
+        .mosaic-size-row input[type="range"] {
+            flex: 1;
+            accent-color: #e94560;
+        }
+
+        .range-value { font-weight: bold; color: #e94560; min-width: 40px; text-align: right; }
+
+        .form-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .form-group { flex: 1; min-width: 200px; }
+
+        .form-group label {
+            display: block;
+            font-size: 0.82rem;
+            color: #aaa;
+            margin-bottom: 6px;
+        }
+
+        .form-group input[type="range"] {
+            width: 100%;
+            accent-color: #e94560;
+        }
+
+        .form-group input[type="text"],
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            background: #0f1f3d;
+            border: 1px solid #2a3a5c;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 0.9rem;
+        }
+
+        .inline-range {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .inline-range input { flex: 1; }
+
+        .checkbox-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 4px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            accent-color: #e94560;
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+        }
+
+        .checkbox-item label { font-size: 0.88rem; cursor: pointer; }
+
+        .advanced-toggle {
+            background: none;
+            border: 1px solid #2a3a5c;
+            color: #aaa;
+            cursor: pointer;
+            font-size: 0.85rem;
+            padding: 8px 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 24px;
+            transition: all 0.2s;
+        }
+
+        .advanced-toggle:hover { border-color: #e94560; color: #e94560; }
+
+        .advanced-section { display: none; margin-top: 16px; }
+        .advanced-section.visible { display: block; }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: #e94560;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 28px;
+            transition: background 0.2s;
+        }
+
+        .submit-btn:hover { background: #c73652; }
+        .submit-btn:disabled { background: #444; cursor: not-allowed; }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            z-index: 100;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .loading-overlay.visible { display: flex; }
+
+        .spinner {
+            width: 52px;
+            height: 52px;
+            border: 5px solid #2a3a5c;
+            border-top-color: #e94560;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-overlay p { font-size: 1.1rem; color: #ccc; }
+
+        .api-docs {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 720px;
+        }
+
+        .api-docs details {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 20px 24px;
+        }
+
+        .api-docs summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: #e94560;
+            font-size: 0.95rem;
+        }
+
+        .api-docs p {
+            color: #888;
+            font-size: 0.88rem;
+            margin-top: 12px;
+            line-height: 1.6;
+        }
+
+        .api-docs code { color: #e94560; }
+
+        .api-docs pre {
+            background: #0a0a14;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 12px;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            color: #7ec8e3;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>Anonymizing your video, please wait...</p>
+    </div>
+
+    <header>
+        <h1>🎭 Face Anonymizer</h1>
+        <p>Upload a video and automatically anonymize all detected faces</p>
+    </header>
+
+    <div class="card">
+        <form action="/process" method="post" enctype="multipart/form-data" id="mainForm">
+
+            <p class="section-label">Video File</p>
+            <div class="file-upload">
+                <input type="file" name="file" accept="video/*" required id="fileInput">
+                <div class="icon">🎬</div>
+                <p class="hint">Click to select a video file</p>
+                <p class="file-name" id="fileName">No file selected</p>
+            </div>
+
+            <p class="section-label" style="margin-top: 28px;">Anonymization Style</p>
+            <div class="style-grid">
+                <div class="style-option">
+                    <input type="radio" name="replacewith" id="r_blur" value="blur" checked>
+                    <label for="r_blur">
+                        <span class="icon">🌫️</span>
+                        <span class="name">Blur</span>
+                        <span class="desc">Gaussian blur effect</span>
+                    </label>
+                </div>
+                <div class="style-option">
+                    <input type="radio" name="replacewith" id="r_mosaic" value="mosaic">
+                    <label for="r_mosaic">
+                        <span class="icon">🟦</span>
+                        <span class="name">Mosaic</span>
+                        <span class="desc">Pixelated tile effect</span>
+                    </label>
+                </div>
+                <div class="style-option">
+                    <input type="radio" name="replacewith" id="r_solid" value="solid">
+                    <label for="r_solid">
+                        <span class="icon">⬛</span>
+                        <span class="name">Solid</span>
+                        <span class="desc">Solid black box</span>
+                    </label>
+                </div>
+                <div class="style-option">
+                    <input type="radio" name="replacewith" id="r_none" value="none">
+                    <label for="r_none">
+                        <span class="icon">👁️</span>
+                        <span class="name">None</span>
+                        <span class="desc">Detect only, no changes</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="mosaic-size-row" id="mosaicRow">
+                <label for="mosaicsize">Mosaic Tile Size</label>
+                <input type="range" name="mosaicsize" id="mosaicsize" min="5" max="100" value="20"
+                       oninput="document.getElementById('mosaicVal').textContent = this.value + 'px'">
+                <span class="range-value" id="mosaicVal">20px</span>
+            </div>
+
+            <p class="section-label" style="margin-top: 28px;">Detection Settings</p>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="thresh">Detection Threshold</label>
+                    <div class="inline-range">
+                        <input type="range" name="thresh" id="thresh"
+                               min="0.01" max="1.0" step="0.01" value="0.2"
+                               oninput="document.getElementById('threshVal').textContent = parseFloat(this.value).toFixed(2)">
+                        <span class="range-value" id="threshVal">0.20</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="mask_scale">Mask Scale</label>
+                    <div class="inline-range">
+                        <input type="range" name="mask_scale" id="mask_scale"
+                               min="0.5" max="3.0" step="0.1" value="1.3"
+                               oninput="document.getElementById('maskVal').textContent = parseFloat(this.value).toFixed(1)">
+                        <span class="range-value" id="maskVal">1.3</span>
+                    </div>
+                </div>
+            </div>
+
+            <p class="section-label" style="margin-top: 24px;">Options</p>
+            <div class="checkbox-row">
+                <div class="checkbox-item">
+                    <input type="checkbox" name="keep_audio" id="keep_audio" value="on">
+                    <label for="keep_audio">Keep original audio</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" name="boxes" id="boxes" value="on">
+                    <label for="boxes">Use rectangular boxes</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" name="draw_scores" id="draw_scores" value="on">
+                    <label for="draw_scores">Draw detection scores</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" name="keep_metadata" id="keep_metadata" value="on">
+                    <label for="keep_metadata">Keep original metadata</label>
+                </div>
+            </div>
+
+            <button type="button" class="advanced-toggle" onclick="toggleAdvanced()">
+                ⚙️ Advanced Settings <span id="advIcon">▼</span>
+            </button>
+
+            <div class="advanced-section" id="advSection">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="scale">Inference Scale (e.g. 640x360)</label>
+                        <input type="text" name="scale" id="scale" placeholder="Leave empty for default">
+                    </div>
+                    <div class="form-group">
+                        <label for="backend">Processing Backend</label>
+                        <select name="backend" id="backend">
+                            <option value="auto">Auto (recommended)</option>
+                            <option value="onnxrt">ONNX Runtime</option>
+                            <option value="opencv">OpenCV</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">🎭 Anonymize Video</button>
+
+        </form>
+    </div>
+
+    <div class="api-docs">
+        <details>
+            <summary>📡 API Documentation</summary>
+            <p>Send a multipart POST request to <code>/process</code> with your video and any of the options below. Add the header <code>Accept: application/octet-stream</code> to get the file returned directly instead of an HTML page.</p>
+            <pre>curl -X POST http://localhost:5000/process \
+  -H "Accept: application/octet-stream" \
+  -F "file=@your_video.mp4" \
+  -F "replacewith=mosaic" \
+  -F "mosaicsize=20" \
+  -F "thresh=0.2" \
+  -F "mask_scale=1.3" \
+  -F "keep_audio=on" \
+  -F "boxes=on" \
+  -F "draw_scores=on" \
+  -F "keep_metadata=on" \
+  -F "scale=640x360" \
+  -F "backend=auto" \
+  --output anonymized.mp4
+
+Available values:
+  replacewith   blur | mosaic | solid | none   (default: blur)
+  mosaicsize    5 to 100                        (default: 20, mosaic only)
+  thresh        0.01 to 1.0                     (default: 0.2)
+  mask_scale    float                           (default: 1.3)
+  backend       auto | onnxrt | opencv          (default: auto)
+  scale         WxH format e.g. 640x360        (optional)
+  keep_audio    on                              (omit to disable)
+  boxes         on                              (omit to disable)
+  draw_scores   on                              (omit to disable)
+  keep_metadata on                              (omit to disable)</pre>
+        </details>
+    </div>
+
+    <script>
+        document.getElementById('fileInput').addEventListener('change', function() {
+            document.getElementById('fileName').textContent =
+                this.files[0] ? this.files[0].name : 'No file selected';
+        });
+
+        document.querySelectorAll('input[name="replacewith"]').forEach(function(radio) {
+            radio.addEventListener('change', function() {
+                const mosaicRow = document.getElementById('mosaicRow');
+                if (this.value === 'mosaic') {
+                    mosaicRow.classList.add('visible');
+                } else {
+                    mosaicRow.classList.remove('visible');
+                }
+            });
+        });
+
+        function toggleAdvanced() {
+            const section = document.getElementById('advSection');
+            const icon = document.getElementById('advIcon');
+            section.classList.toggle('visible');
+            icon.textContent = section.classList.contains('visible') ? '▲' : '▼';
+        }
+
+        document.getElementById('mainForm').addEventListener('submit', function() {
+            document.getElementById('loadingOverlay').classList.add('visible');
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('submitBtn').textContent = 'Processing...';
+        });
+    </script>
+
+</body>
+</html>
