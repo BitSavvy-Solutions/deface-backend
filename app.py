@@ -12,23 +12,23 @@ from flask import Flask, request, send_file, render_template, jsonify, Response,
 
 app = Flask(__name__)
 
-UPLOAD_FOLDER = '/tmp/videos'
+UPLOAD_FOLDER = '/tmp/media'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 jobs = {}
 
-ANSI_RE    = re.compile(r'\x1b\[[0-9;]*[A-Za-z]')
+ANSI_RE = re.compile(r'\x1b\[[0-9;]*[A-Za-z]')
 PROGRESS_RE = re.compile(
     r'(\d+)%\|.*?\|\s*(\d+)/(\d+)\s*\[([^<\]]+)<([^,\]]+),\s*([^\]]+)\]'
 )
 
 
-def cleanup_videos():
+def cleanup_media():
     shutil.rmtree(UPLOAD_FOLDER, ignore_errors=True)
 
 
 def _on_shutdown(signum, frame):
-    cleanup_videos()
+    cleanup_media()
     os._exit(0)
 
 
@@ -87,8 +87,6 @@ def run_deface(job_id, cmd, output_path, filename):
     recent = []
 
     try:
-        # Merge stderr into stdout so one pipe covers all output.
-        # This avoids the deadlock risk of leaving an unread pipe full.
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         buf = b''
@@ -113,7 +111,6 @@ def run_deface(job_id, cmd, output_path, filename):
             else:
                 buf += ch
 
-        # Anything left in the buffer after the pipe closes
         if buf:
             line = buf.decode('utf-8', errors='replace').strip()
             if line:
@@ -131,7 +128,7 @@ def run_deface(job_id, cmd, output_path, filename):
     except Exception as exc:
         q.put({'type': 'error', 'message': str(exc)})
     finally:
-        q.put(None)   # sentinel signals the SSE generator to stop
+        q.put(None)
 
 
 @app.route('/')
@@ -140,20 +137,25 @@ def home():
 
 
 @app.route('/process', methods=['POST'])
-def process_video():
+def process_media():
     if 'file' not in request.files:
         return jsonify({'error': 'No file provided'}), 400
 
-    video_file = request.files['file']
-    if video_file.filename == '':
+    media_file = request.files['file']
+    if media_file.filename == '':
         return jsonify({'error': 'No file selected'}), 400
 
-    file_id      = str(uuid.uuid4())
-    input_path   = f'{UPLOAD_FOLDER}/{file_id}_input.mp4'
-    output_path  = f'{UPLOAD_FOLDER}/{file_id}_output.mp4'
-    out_filename = f'{file_id}_output.mp4'
+    file_id = str(uuid.uuid4())
+    ext = os.path.splitext(media_file.filename)[1].lower()
+    
+    is_image = ext in ['.jpg', '.jpeg', '.png', '.bmp', '.webp']
+    out_ext = ext if is_image else '.mp4'
 
-    video_file.save(input_path)
+    input_path   = f'{UPLOAD_FOLDER}/{file_id}_input{ext}'
+    output_path  = f'{UPLOAD_FOLDER}/{file_id}_output{out_ext}'
+    out_filename = f'{file_id}_output{out_ext}'
+
+    media_file.save(input_path)
 
     options = {
         'thresh':        request.form.get('thresh',        '0.2'),
@@ -170,15 +172,14 @@ def process_video():
 
     cmd = build_deface_command(input_path, output_path, options)
 
-    # API callers get a synchronous response with the file directly
     if 'application/octet-stream' in request.headers.get('Accept', ''):
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode != 0 or not os.path.exists(output_path):
             return jsonify({'error': 'Processing failed', 'details': result.stderr}), 500
-        return send_file(output_path, mimetype='video/mp4', as_attachment=True,
-                         download_name='anonymized.mp4')
+        mimetype = 'image/jpeg' if is_image else 'video/mp4'
+        return send_file(output_path, mimetype=mimetype, as_attachment=True,
+                         download_name=f'anonymized{out_ext}')
 
-    # Browser callers get a job_id and stream progress via SSE
     job_id = str(uuid.uuid4())
     jobs[job_id] = queue.Queue()
 
@@ -222,20 +223,61 @@ def progress_stream(job_id):
 
 @app.route('/result/<filename>')
 def result_page(filename):
-    if not re.match(r'^[0-9a-f-]+_output\.mp4$', filename):
+    if not re.match(r'^[0-9a-f\-]+_output\.[a-zA-Z0-9]+$', filename):
         return jsonify({'error': 'Invalid filename'}), 400
-    if not os.path.exists(f'{UPLOAD_FOLDER}/{filename}'):
-        return jsonify({'error': 'File not found'}), 404
-    return render_template('result.html', filename=filename)
-
-
-@app.route('/video/<filename>')
-def serve_video(filename):
+    
     file_path = f'{UPLOAD_FOLDER}/{filename}'
     if not os.path.exists(file_path):
         return jsonify({'error': 'File not found'}), 404
-    return send_file(file_path, mimetype='video/mp4', as_attachment=True,
-                     download_name='anonymized.mp4')
+        
+    ext = os.path.splitext(filename)[1].lower()
+    is_image = ext in ['.jpg', '.jpeg', '.png', '.bmp', '.webp']
+    file_id = filename.split('_output')[0]
+    
+    return render_template('result.html', filename=filename, file_id=file_id, is_image=is_image)
+
+
+@app.route('/media/<filename>')
+def serve_media(filename):
+    file_path = f'{UPLOAD_FOLDER}/{filename}'
+    if not os.path.exists(file_path):
+        return jsonify({'error': 'File not found'}), 404
+        
+    ext = os.path.splitext(filename)[1].lower()
+    mimetype = 'image/jpeg' if ext in ['.jpg', '.jpeg'] else 'video/mp4'
+    if ext == '.png': mimetype = 'image/png'
+    if ext == '.webm': mimetype = 'video/webm'
+    
+    return send_file(file_path, mimetype=mimetype, as_attachment=False)
+
+
+@app.route('/download/<filename>')
+def download_media(filename):
+    file_path = f'{UPLOAD_FOLDER}/{filename}'
+    if not os.path.exists(file_path):
+        return jsonify({'error': 'File not found'}), 404
+        
+    ext = os.path.splitext(filename)[1].lower()
+    return send_file(file_path, as_attachment=True, download_name=f'anonymized{ext}')
+
+
+@app.route('/delete/<file_id>', methods=['POST'])
+def delete_files(file_id):
+    if not re.match(r'^[0-9a-f\-]+$', file_id):
+        return jsonify({'error': 'Invalid ID'}), 400
+        
+    deleted = False
+    for f in os.listdir(UPLOAD_FOLDER):
+        if f.startswith(file_id):
+            try:
+                os.remove(os.path.join(UPLOAD_FOLDER, f))
+                deleted = True
+            except Exception:
+                pass
+                
+    if deleted:
+        return jsonify({'success': True})
+    return jsonify({'error': 'Files not found'}), 404
 
 
 if __name__ == '__main__':

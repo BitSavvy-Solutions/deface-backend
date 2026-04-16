@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Ready</title>
+    <title>Media Ready</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -23,7 +23,7 @@
             border-radius: 16px;
             padding: 52px 48px;
             text-align: center;
-            max-width: 480px;
+            max-width: 640px;
             width: 100%;
             box-shadow: 0 8px 32px rgba(0,0,0,0.4);
         }
@@ -34,15 +34,33 @@
 
         p { color: #888; margin-bottom: 32px; font-size: 0.95rem; }
 
+        .media-preview {
+            width: 100%;
+            max-height: 400px;
+            background: #000;
+            border-radius: 10px;
+            margin-bottom: 32px;
+            object-fit: contain;
+            border: 1px solid #2a3a5c;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+        }
+
         .btn {
             display: inline-block;
-            padding: 14px 32px;
+            padding: 14px 24px;
             border-radius: 10px;
             font-size: 1rem;
             font-weight: bold;
             text-decoration: none;
-            margin: 6px;
             transition: background 0.2s;
+            cursor: pointer;
+            border: none;
         }
 
         .btn-primary { background: #e94560; color: white; }
@@ -50,15 +68,49 @@
 
         .btn-secondary { background: #1a2f55; color: #ccc; }
         .btn-secondary:hover { background: #243d6e; }
+
+        .btn-danger { background: transparent; border: 1px solid #e94560; color: #e94560; }
+        .btn-danger:hover { background: #e94560; color: white; }
     </style>
 </head>
 <body>
     <div class="card">
         <div class="icon">✅</div>
-        <h1>Your video is ready!</h1>
+        <h1>Your media is ready!</h1>
         <p>All faces have been anonymized successfully.</p>
-        <a class="btn btn-primary" href="/video/{{ filename }}" download>⬇️ Download Video</a>
-        <a class="btn btn-secondary" href="/">Process Another Video</a>
+        
+        {% if is_image %}
+            <img src="/media/{{ filename }}" alt="Anonymized Image" class="media-preview">
+        {% else %}
+            <video src="/media/{{ filename }}" controls class="media-preview"></video>
+        {% endif %}
+
+        <div class="btn-group">
+            <a class="btn btn-primary" href="/download/{{ filename }}">⬇️ Download</a>
+            <a class="btn btn-secondary" href="/">Process Another File</a>
+            <button class="btn btn-danger" onclick="deleteFiles('{{ file_id }}')">🗑️ Delete Files</button>
+        </div>
     </div>
+
+    <script>
+        function deleteFiles(fileId) {
+            if (!confirm('Are you sure you want to delete both the original and processed files from the server?')) {
+                return;
+            }
+            
+            fetch('/delete/' + fileId, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = '/';
+                    } else {
+                        alert('Failed to delete files or files already removed.');
+                    }
+                })
+                .catch(err => {
+                    alert('An error occurred while deleting files.');
+                });
+        }
+    </script>
 </body>
 </html>

@@ -1,4 +1,3 @@
-<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -32,6 +31,34 @@
             box-shadow: 0 8px 32px rgba(0,0,0,0.4);
         }
 
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+            background: #0f1f3d;
+            padding: 6px;
+            border-radius: 12px;
+        }
+        .tab {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            color: #888;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .tab.active {
+            background: #e94560;
+            color: white;
+        }
+
+        .panel { display: none; }
+        .panel.active { display: block; }
+
         .section-label {
             font-size: 0.75rem;
             text-transform: uppercase;
@@ -59,6 +86,45 @@
         .file-upload .icon  { font-size: 2.2rem; margin-bottom: 8px; }
         .file-upload .hint  { color: #666; font-size: 0.9rem; }
         .file-upload .file-name { color: #e94560; margin-top: 8px; font-weight: bold; font-size: 0.95rem; }
+
+        .media-container {
+            width: 100%;
+            background: #0a0a14;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid #2a3a5c;
+        }
+        .media-container video, .media-container img {
+            width: 100%;
+            max-height: 400px;
+            background: #000;
+            object-fit: contain;
+            display: none;
+        }
+        .media-controls {
+            width: 100%;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            background: #0f1f3d;
+        }
+        .btn-action {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            color: white;
+        }
+        .btn-start { background: #e94560; }
+        .btn-start:hover { background: #c73652; }
+        .btn-stop { background: #555; }
+        .btn-stop:hover { background: #444; }
 
         .style-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
         .style-option { position: relative; }
@@ -133,7 +199,6 @@
             white-space: pre-wrap; text-align: left;
         }
 
-        /* Progress overlay */
         .loading-overlay {
             display: none; position: fixed; inset: 0;
             background: rgba(0,0,0,0.85); z-index: 100;
@@ -168,18 +233,6 @@
         .p-frames { font-size: 0.85rem; color: #555; }
         .p-time   { color: #888; font-size: 0.88rem; margin-bottom: 6px; min-height: 1.2em; }
         .p-speed  { color: #555; font-size: 0.8rem; min-height: 1em; }
-
-        /* API docs */
-        .api-docs { margin-top: 20px; width: 100%; max-width: 720px; }
-        .api-docs details { background: #16213e; border-radius: 12px; padding: 20px 24px; }
-        .api-docs summary { cursor: pointer; font-weight: bold; color: #e94560; font-size: 0.95rem; }
-        .api-docs p  { color: #888; font-size: 0.88rem; margin-top: 12px; line-height: 1.6; }
-        .api-docs code { color: #e94560; }
-        .api-docs pre {
-            background: #0a0a14; border-radius: 8px; padding: 16px;
-            margin-top: 12px; font-size: 0.8rem; overflow-x: auto;
-            color: #7ec8e3; line-height: 1.6;
-        }
     </style>
 </head>
 <body>
@@ -187,7 +240,7 @@
     <div class="loading-overlay" id="loadingOverlay">
         <div class="progress-card">
             <div class="p-icon">🎭</div>
-            <p class="p-title">Anonymizing Video</p>
+            <p class="p-title">Anonymizing Media</p>
             <div class="pbar-wrap">
                 <div class="pbar-fill" id="pbarFill"></div>
             </div>
@@ -202,18 +255,49 @@
 
     <header>
         <h1>🎭 Face Anonymizer</h1>
-        <p>Upload a video and automatically anonymize all detected faces</p>
+        <p>Upload or record media to automatically anonymize all detected faces</p>
     </header>
 
     <div class="card">
+        <div class="tabs">
+            <button type="button" class="tab active" onclick="setMode('upload')" id="tabUpload">Upload File</button>
+            <button type="button" class="tab" onclick="setMode('record')" id="tabRecord">Record Video</button>
+            <button type="button" class="tab" onclick="setMode('photo')" id="tabPhoto">Take Photo</button>
+        </div>
+
         <form id="mainForm" enctype="multipart/form-data">
 
-            <p class="section-label">Video File</p>
-            <div class="file-upload">
-                <input type="file" name="file" accept="video/*" required id="fileInput">
-                <div class="icon">🎬</div>
-                <p class="hint">Click to select a video file</p>
-                <p class="file-name" id="fileName">No file selected</p>
+            <div id="panelUpload" class="panel active">
+                <div class="file-upload">
+                    <input type="file" id="fileInput" accept="video/*,image/*">
+                    <div class="icon">🎬</div>
+                    <p class="hint">Click to select a video or photo file</p>
+                    <p class="file-name" id="fileName">No file selected</p>
+                </div>
+            </div>
+
+            <div id="panelRecord" class="panel">
+                <div class="media-container">
+                    <video id="recordLive" autoplay muted playsinline></video>
+                    <video id="recordPreview" controls></video>
+                    <div class="media-controls">
+                        <button type="button" class="btn-action btn-start" id="btnStartRecord" onclick="startRecording()">Start Recording</button>
+                        <button type="button" class="btn-action btn-stop" id="btnStopRecord" onclick="stopRecording()" style="display:none;">Stop Recording</button>
+                        <button type="button" class="btn-action btn-stop" id="btnRetakeVideo" onclick="resetRecord()" style="display:none;">Record again</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="panelPhoto" class="panel">
+                <div class="media-container">
+                    <video id="photoLive" autoplay muted playsinline></video>
+                    <img id="photoPreview" alt="Captured photo">
+                    <canvas id="photoCanvas" style="display:none;"></canvas>
+                    <div class="media-controls">
+                        <button type="button" class="btn-action btn-start" id="btnTakePhoto" onclick="takePhoto()">Capture Photo</button>
+                        <button type="button" class="btn-action btn-stop" id="btnRetakePhoto" onclick="resetPhoto()" style="display:none;">Take another</button>
+                    </div>
+                </div>
             </div>
 
             <p class="section-label" style="margin-top:28px;">Anonymization Style</p>
@@ -247,7 +331,7 @@
                     <label for="r_none">
                         <span class="icon">👁️</span>
                         <span class="name">None</span>
-                        <span class="desc">Detect only, no changes</span>
+                        <span class="desc">Detect only</span>
                     </label>
                 </div>
             </div>
@@ -284,15 +368,15 @@
             <p class="section-label" style="margin-top:24px;">Options</p>
             <div class="checkbox-row">
                 <div class="checkbox-item">
-                    <input type="checkbox" name="keep_audio"    id="keep_audio"    value="on">
+                    <input type="checkbox" name="keep_audio" id="keep_audio" value="on">
                     <label for="keep_audio">Keep original audio</label>
                 </div>
                 <div class="checkbox-item">
-                    <input type="checkbox" name="boxes"         id="boxes"         value="on">
+                    <input type="checkbox" name="boxes" id="boxes" value="on">
                     <label for="boxes">Use rectangular boxes</label>
                 </div>
                 <div class="checkbox-item">
-                    <input type="checkbox" name="draw_scores"   id="draw_scores"   value="on">
+                    <input type="checkbox" name="draw_scores" id="draw_scores" value="on">
                     <label for="draw_scores">Draw detection scores</label>
                 </div>
                 <div class="checkbox-item">
@@ -308,13 +392,13 @@
             <div class="advanced-section" id="advSection">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="scale">Inference Scale (e.g. 640x360)</label>
+                        <label for="scale">Inference Scale</label>
                         <input type="text" name="scale" id="scale" placeholder="Leave empty for default">
                     </div>
                     <div class="form-group">
                         <label for="backend">Processing Backend</label>
                         <select name="backend" id="backend">
-                            <option value="auto">Auto (recommended)</option>
+                            <option value="auto">Auto</option>
                             <option value="onnxrt">ONNX Runtime</option>
                             <option value="opencv">OpenCV</option>
                         </select>
@@ -322,46 +406,20 @@
                 </div>
             </div>
 
-            <button type="submit" class="submit-btn" id="submitBtn">🎭 Anonymize Video</button>
+            <button type="submit" class="submit-btn" id="submitBtn">🎭 Anonymize Media</button>
             <div class="error-box" id="errorBox"></div>
 
         </form>
     </div>
 
-    <div class="api-docs">
-        <details>
-            <summary>📡 API Documentation</summary>
-            <p>Send a multipart POST request to <code>/process</code> with your video and any of the options below. Add the header <code>Accept: application/octet-stream</code> to get the file returned directly instead of an HTML page.</p>
-            <pre>curl -X POST http://localhost:5000/process \
-  -H "Accept: application/octet-stream" \
-  -F "file=@your_video.mp4" \
-  -F "replacewith=mosaic" \
-  -F "mosaicsize=20" \
-  -F "thresh=0.2" \
-  -F "mask_scale=1.3" \
-  -F "keep_audio=on" \
-  -F "boxes=on" \
-  -F "draw_scores=on" \
-  -F "keep_metadata=on" \
-  -F "scale=640x360" \
-  -F "backend=auto" \
-  --output anonymized.mp4
-
-Available values:
-  replacewith   blur | mosaic | solid | none   (default: blur)
-  mosaicsize    5 to 100                        (default: 20, mosaic only)
-  thresh        0.01 to 1.0                     (default: 0.2)
-  mask_scale    float                           (default: 1.3)
-  backend       auto | onnxrt | opencv          (default: auto)
-  scale         WxH format e.g. 640x360        (optional)
-  keep_audio    on                              (omit to disable)
-  boxes         on                              (omit to disable)
-  draw_scores   on                              (omit to disable)
-  keep_metadata on                              (omit to disable)</pre>
-        </details>
-    </div>
-
     <script>
+        let currentMode = 'upload';
+        let stream = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let recordedBlob = null;
+        let photoBlob = null;
+
         document.getElementById('fileInput').addEventListener('change', function () {
             document.getElementById('fileName').textContent =
                 this.files[0] ? this.files[0].name : 'No file selected';
@@ -380,22 +438,140 @@ Available values:
             icon.textContent = section.classList.contains('visible') ? '▲' : '▼';
         }
 
+        function stopStream() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+        }
+
+        async function setMode(mode) {
+            currentMode = mode;
+            stopStream();
+            
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            
+            document.getElementById('tab' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('active');
+            document.getElementById('panel' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('active');
+
+            if (mode === 'record') {
+                resetRecord();
+            } else if (mode === 'photo') {
+                resetPhoto();
+            }
+        }
+
+        async function startCamera(videoElementId, audio) {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: audio });
+                const videoElement = document.getElementById(videoElementId);
+                videoElement.srcObject = stream;
+                videoElement.style.display = 'block';
+            } catch (err) {
+                showError('Camera access denied or unavailable.');
+            }
+        }
+
+        function resetRecord() {
+            recordedBlob = null;
+            recordedChunks = [];
+            document.getElementById('recordPreview').style.display = 'none';
+            document.getElementById('btnStartRecord').style.display = 'inline-block';
+            document.getElementById('btnStopRecord').style.display = 'none';
+            document.getElementById('btnRetakeVideo').style.display = 'none';
+            startCamera('recordLive', true);
+        }
+
+        function startRecording() {
+            if (!stream) return;
+            recordedChunks = [];
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.ondataavailable = e => {
+                if (e.data.size > 0) recordedChunks.push(e.data);
+            };
+            mediaRecorder.onstop = () => {
+                recordedBlob = new Blob(recordedChunks, { type: 'video/webm' });
+                const videoUrl = URL.createObjectURL(recordedBlob);
+                const preview = document.getElementById('recordPreview');
+                preview.src = videoUrl;
+                preview.style.display = 'block';
+                document.getElementById('recordLive').style.display = 'none';
+                
+                document.getElementById('btnStopRecord').style.display = 'none';
+                document.getElementById('btnRetakeVideo').style.display = 'inline-block';
+                stopStream();
+            };
+            mediaRecorder.start();
+            document.getElementById('btnStartRecord').style.display = 'none';
+            document.getElementById('btnStopRecord').style.display = 'inline-block';
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+        }
+
+        function resetPhoto() {
+            photoBlob = null;
+            document.getElementById('photoPreview').style.display = 'none';
+            document.getElementById('btnTakePhoto').style.display = 'inline-block';
+            document.getElementById('btnRetakePhoto').style.display = 'none';
+            startCamera('photoLive', false);
+        }
+
+        function takePhoto() {
+            const video = document.getElementById('photoLive');
+            const canvas = document.getElementById('photoCanvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            canvas.toBlob(blob => {
+                photoBlob = blob;
+                const imgUrl = URL.createObjectURL(blob);
+                const preview = document.getElementById('photoPreview');
+                preview.src = imgUrl;
+                preview.style.display = 'block';
+                video.style.display = 'none';
+                
+                document.getElementById('btnTakePhoto').style.display = 'none';
+                document.getElementById('btnRetakePhoto').style.display = 'inline-block';
+                stopStream();
+            }, 'image/jpeg', 0.95);
+        }
+
         document.getElementById('mainForm').addEventListener('submit', function (e) {
             e.preventDefault();
-
             document.getElementById('errorBox').style.display = 'none';
-            document.getElementById('submitBtn').disabled    = true;
+
+            const formData = new FormData(this);
+            
+            if (currentMode === 'upload') {
+                const fileInput = document.getElementById('fileInput');
+                if (!fileInput.files[0]) return showError('Please select a file');
+                formData.append('file', fileInput.files[0]);
+            } else if (currentMode === 'record') {
+                if (!recordedBlob) return showError('Please record a video first');
+                formData.append('file', recordedBlob, 'video.webm');
+            } else if (currentMode === 'photo') {
+                if (!photoBlob) return showError('Please take a photo first');
+                formData.append('file', photoBlob, 'photo.jpg');
+            }
+
+            document.getElementById('submitBtn').disabled = true;
             document.getElementById('submitBtn').textContent = 'Processing...';
             document.getElementById('loadingOverlay').classList.add('visible');
-            document.getElementById('pTime').textContent = 'Uploading video...';
+            document.getElementById('pTime').textContent = 'Uploading media...';
 
-            fetch('/process', { method: 'POST', body: new FormData(this) })
-                .then(function (r) { return r.json(); })
-                .then(function (data) {
+            fetch('/process', { method: 'POST', body: formData })
+                .then(r => r.json())
+                .then(data => {
                     if (data.error) { hideOverlay(); showError(data.error); return; }
                     openProgressStream(data.job_id);
                 })
-                .catch(function () {
+                .catch(() => {
                     hideOverlay();
                     showError('Upload failed. Please try again.');
                 });
@@ -411,26 +587,17 @@ Available values:
                 if (msg.type === 'progress') {
                     document.getElementById('pbarFill').style.width = msg.percent + '%';
                     document.getElementById('pPct').textContent     = msg.percent + '%';
-                    document.getElementById('pFrames').textContent  =
-                        msg.current + ' / ' + msg.total + ' frames';
-                    document.getElementById('pTime').textContent    =
-                        msg.elapsed + ' elapsed, ' + msg.remaining + ' remaining';
+                    document.getElementById('pFrames').textContent  = msg.current + ' / ' + msg.total + ' frames';
+                    document.getElementById('pTime').textContent    = msg.elapsed + ' elapsed, ' + msg.remaining + ' remaining';
                     document.getElementById('pSpeed').textContent   = msg.speed;
-
                 } else if (msg.type === 'log') {
                     document.getElementById('pTime').textContent = msg.message;
-
                 } else if (msg.type === 'done') {
                     es.close();
                     document.getElementById('pbarFill').style.width = '100%';
                     document.getElementById('pPct').textContent     = '100%';
-                    document.getElementById('pFrames').textContent  = '';
                     document.getElementById('pTime').textContent    = 'Done! Redirecting...';
-                    document.getElementById('pSpeed').textContent   = '';
-                    setTimeout(function () {
-                        window.location.href = '/result/' + msg.filename;
-                    }, 800);
-
+                    setTimeout(() => window.location.href = '/result/' + msg.filename, 800);
                 } else if (msg.type === 'error') {
                     es.close();
                     hideOverlay();
@@ -447,17 +614,16 @@ Available values:
 
         function hideOverlay() {
             document.getElementById('loadingOverlay').classList.remove('visible');
-            document.getElementById('submitBtn').disabled    = false;
-            document.getElementById('submitBtn').textContent = '🎭 Anonymize Video';
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('submitBtn').textContent = '🎭 Anonymize Media';
         }
 
         function showError(msg) {
             var box = document.getElementById('errorBox');
-            box.textContent  = msg;
+            box.textContent = msg;
             box.style.display = 'block';
             box.scrollIntoView({ behavior: 'smooth' });
         }
     </script>
-
 </body>
 </html>
