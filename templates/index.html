@@ -1,3 +1,4 @@
+<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,13 +19,9 @@
             padding: 40px 20px;
         }
 
-        header {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
+        header { text-align: center; margin-bottom: 32px; }
         header h1 { font-size: 2.4rem; color: #e94560; margin-bottom: 8px; }
-        header p { color: #888; font-size: 1rem; }
+        header p  { color: #888; font-size: 1rem; }
 
         .card {
             background: #16213e;
@@ -43,7 +40,6 @@
             margin-bottom: 12px;
             margin-top: 28px;
         }
-
         .section-label:first-child { margin-top: 0; }
 
         .file-upload {
@@ -55,252 +51,153 @@
             transition: border-color 0.2s;
             position: relative;
         }
-
         .file-upload:hover { border-color: #e94560; }
-
         .file-upload input[type="file"] {
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            cursor: pointer;
-            width: 100%;
-            height: 100%;
+            position: absolute; inset: 0; opacity: 0;
+            cursor: pointer; width: 100%; height: 100%;
         }
-
-        .file-upload .icon { font-size: 2.2rem; margin-bottom: 8px; }
-        .file-upload .hint { color: #666; font-size: 0.9rem; }
+        .file-upload .icon  { font-size: 2.2rem; margin-bottom: 8px; }
+        .file-upload .hint  { color: #666; font-size: 0.9rem; }
         .file-upload .file-name { color: #e94560; margin-top: 8px; font-weight: bold; font-size: 0.95rem; }
 
-        .style-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: 10px;
-        }
-
+        .style-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
         .style-option { position: relative; }
-
-        .style-option input[type="radio"] {
-            position: absolute;
-            opacity: 0;
-            width: 0;
-        }
-
+        .style-option input[type="radio"] { position: absolute; opacity: 0; width: 0; }
         .style-option label {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 16px 10px;
-            background: #0f1f3d;
-            border: 2px solid #2a3a5c;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
-            gap: 4px;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 16px 10px; background: #0f1f3d;
+            border: 2px solid #2a3a5c; border-radius: 10px;
+            cursor: pointer; transition: all 0.2s; text-align: center; gap: 4px;
         }
-
         .style-option label .icon { font-size: 1.6rem; }
         .style-option label .name { font-size: 0.9rem; font-weight: bold; }
         .style-option label .desc { font-size: 0.7rem; color: #666; }
-
-        .style-option input:checked + label {
-            border-color: #e94560;
-            background: #1f0d15;
-        }
-
+        .style-option input:checked + label { border-color: #e94560; background: #1f0d15; }
         .style-option label:hover { border-color: #e94560; }
 
         .mosaic-size-row {
-            display: none;
-            margin-top: 16px;
-            align-items: center;
-            gap: 16px;
-            background: #0f1f3d;
-            padding: 16px;
-            border-radius: 10px;
+            display: none; margin-top: 16px; align-items: center; gap: 16px;
+            background: #0f1f3d; padding: 16px; border-radius: 10px;
         }
-
         .mosaic-size-row.visible { display: flex; }
         .mosaic-size-row label { font-size: 0.9rem; color: #aaa; white-space: nowrap; }
-
-        .mosaic-size-row input[type="range"] {
-            flex: 1;
-            accent-color: #e94560;
-        }
+        .mosaic-size-row input[type="range"] { flex: 1; accent-color: #e94560; }
 
         .range-value { font-weight: bold; color: #e94560; min-width: 40px; text-align: right; }
 
-        .form-row {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
+        .form-row { display: flex; gap: 16px; flex-wrap: wrap; }
         .form-group { flex: 1; min-width: 200px; }
-
-        .form-group label {
-            display: block;
-            font-size: 0.82rem;
-            color: #aaa;
-            margin-bottom: 6px;
-        }
-
-        .form-group input[type="range"] {
-            width: 100%;
-            accent-color: #e94560;
-        }
-
+        .form-group label { display: block; font-size: 0.82rem; color: #aaa; margin-bottom: 6px; }
+        .form-group input[type="range"] { width: 100%; accent-color: #e94560; }
         .form-group input[type="text"],
         .form-group select {
-            width: 100%;
-            padding: 10px 12px;
-            background: #0f1f3d;
-            border: 1px solid #2a3a5c;
-            border-radius: 8px;
-            color: #e0e0e0;
-            font-size: 0.9rem;
+            width: 100%; padding: 10px 12px; background: #0f1f3d;
+            border: 1px solid #2a3a5c; border-radius: 8px;
+            color: #e0e0e0; font-size: 0.9rem;
         }
 
-        .inline-range {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
+        .inline-range { display: flex; align-items: center; gap: 10px; }
         .inline-range input { flex: 1; }
 
-        .checkbox-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 14px;
-            margin-top: 4px;
-        }
-
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-        }
-
+        .checkbox-row { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 4px; }
+        .checkbox-item { display: flex; align-items: center; gap: 8px; cursor: pointer; }
         .checkbox-item input[type="checkbox"] {
-            accent-color: #e94560;
-            width: 15px;
-            height: 15px;
-            cursor: pointer;
+            accent-color: #e94560; width: 15px; height: 15px; cursor: pointer;
         }
-
         .checkbox-item label { font-size: 0.88rem; cursor: pointer; }
 
         .advanced-toggle {
-            background: none;
-            border: 1px solid #2a3a5c;
-            color: #aaa;
-            cursor: pointer;
-            font-size: 0.85rem;
-            padding: 8px 16px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 24px;
-            transition: all 0.2s;
+            background: none; border: 1px solid #2a3a5c; color: #aaa;
+            cursor: pointer; font-size: 0.85rem; padding: 8px 16px;
+            border-radius: 8px; display: flex; align-items: center;
+            gap: 6px; margin-top: 24px; transition: all 0.2s;
         }
-
         .advanced-toggle:hover { border-color: #e94560; color: #e94560; }
 
         .advanced-section { display: none; margin-top: 16px; }
         .advanced-section.visible { display: block; }
 
         .submit-btn {
-            width: 100%;
-            padding: 16px;
-            background: #e94560;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 28px;
-            transition: background 0.2s;
+            width: 100%; padding: 16px; background: #e94560; color: white;
+            border: none; border-radius: 10px; font-size: 1.1rem;
+            font-weight: bold; cursor: pointer; margin-top: 28px; transition: background 0.2s;
         }
-
-        .submit-btn:hover { background: #c73652; }
+        .submit-btn:hover    { background: #c73652; }
         .submit-btn:disabled { background: #444; cursor: not-allowed; }
 
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.75);
-            z-index: 100;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
+        .error-box {
+            display: none; margin-top: 16px; padding: 14px 18px;
+            background: #2a0f15; border: 1px solid #e94560;
+            border-radius: 10px; color: #e94560;
+            font-size: 0.88rem; line-height: 1.5;
+            white-space: pre-wrap; text-align: left;
         }
 
+        /* Progress overlay */
+        .loading-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.85); z-index: 100;
+            align-items: center; justify-content: center;
+        }
         .loading-overlay.visible { display: flex; }
 
-        .spinner {
-            width: 52px;
-            height: 52px;
-            border: 5px solid #2a3a5c;
-            border-top-color: #e94560;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+        .progress-card {
+            background: #16213e; border-radius: 16px;
+            padding: 40px 48px; width: 90%; max-width: 460px;
+            text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+        }
+        .progress-card .p-icon  { font-size: 3rem; margin-bottom: 14px; }
+        .progress-card .p-title { font-size: 1.3rem; margin-bottom: 28px; color: #e0e0e0; }
+
+        .pbar-wrap {
+            background: #0f1f3d; border-radius: 99px;
+            height: 14px; overflow: hidden; margin-bottom: 14px;
+        }
+        .pbar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #c73652, #e94560);
+            border-radius: 99px; width: 0%;
+            transition: width 0.4s ease;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .loading-overlay p { font-size: 1.1rem; color: #ccc; }
-
-        .api-docs {
-            margin-top: 20px;
-            width: 100%;
-            max-width: 720px;
+        .p-stats-row {
+            display: flex; justify-content: space-between;
+            align-items: flex-end; margin-bottom: 16px;
         }
+        .p-pct    { font-size: 1.6rem; font-weight: bold; color: #e94560; }
+        .p-frames { font-size: 0.85rem; color: #555; }
+        .p-time   { color: #888; font-size: 0.88rem; margin-bottom: 6px; min-height: 1.2em; }
+        .p-speed  { color: #555; font-size: 0.8rem; min-height: 1em; }
 
-        .api-docs details {
-            background: #16213e;
-            border-radius: 12px;
-            padding: 20px 24px;
-        }
-
-        .api-docs summary {
-            cursor: pointer;
-            font-weight: bold;
-            color: #e94560;
-            font-size: 0.95rem;
-        }
-
-        .api-docs p {
-            color: #888;
-            font-size: 0.88rem;
-            margin-top: 12px;
-            line-height: 1.6;
-        }
-
+        /* API docs */
+        .api-docs { margin-top: 20px; width: 100%; max-width: 720px; }
+        .api-docs details { background: #16213e; border-radius: 12px; padding: 20px 24px; }
+        .api-docs summary { cursor: pointer; font-weight: bold; color: #e94560; font-size: 0.95rem; }
+        .api-docs p  { color: #888; font-size: 0.88rem; margin-top: 12px; line-height: 1.6; }
         .api-docs code { color: #e94560; }
-
         .api-docs pre {
-            background: #0a0a14;
-            border-radius: 8px;
-            padding: 16px;
-            margin-top: 12px;
-            font-size: 0.8rem;
-            overflow-x: auto;
-            color: #7ec8e3;
-            line-height: 1.6;
+            background: #0a0a14; border-radius: 8px; padding: 16px;
+            margin-top: 12px; font-size: 0.8rem; overflow-x: auto;
+            color: #7ec8e3; line-height: 1.6;
         }
     </style>
 </head>
 <body>
 
     <div class="loading-overlay" id="loadingOverlay">
-        <div class="spinner"></div>
-        <p>Anonymizing your video, please wait...</p>
+        <div class="progress-card">
+            <div class="p-icon">🎭</div>
+            <p class="p-title">Anonymizing Video</p>
+            <div class="pbar-wrap">
+                <div class="pbar-fill" id="pbarFill"></div>
+            </div>
+            <div class="p-stats-row">
+                <span class="p-pct"    id="pPct">0%</span>
+                <span class="p-frames" id="pFrames"></span>
+            </div>
+            <p class="p-time"  id="pTime">Starting up...</p>
+            <p class="p-speed" id="pSpeed"></p>
+        </div>
     </div>
 
     <header>
@@ -309,7 +206,7 @@
     </header>
 
     <div class="card">
-        <form action="/process" method="post" enctype="multipart/form-data" id="mainForm">
+        <form id="mainForm" enctype="multipart/form-data">
 
             <p class="section-label">Video File</p>
             <div class="file-upload">
@@ -319,7 +216,7 @@
                 <p class="file-name" id="fileName">No file selected</p>
             </div>
 
-            <p class="section-label" style="margin-top: 28px;">Anonymization Style</p>
+            <p class="section-label" style="margin-top:28px;">Anonymization Style</p>
             <div class="style-grid">
                 <div class="style-option">
                     <input type="radio" name="replacewith" id="r_blur" value="blur" checked>
@@ -362,7 +259,7 @@
                 <span class="range-value" id="mosaicVal">20px</span>
             </div>
 
-            <p class="section-label" style="margin-top: 28px;">Detection Settings</p>
+            <p class="section-label" style="margin-top:28px;">Detection Settings</p>
             <div class="form-row">
                 <div class="form-group">
                     <label for="thresh">Detection Threshold</label>
@@ -384,18 +281,18 @@
                 </div>
             </div>
 
-            <p class="section-label" style="margin-top: 24px;">Options</p>
+            <p class="section-label" style="margin-top:24px;">Options</p>
             <div class="checkbox-row">
                 <div class="checkbox-item">
-                    <input type="checkbox" name="keep_audio" id="keep_audio" value="on">
+                    <input type="checkbox" name="keep_audio"    id="keep_audio"    value="on">
                     <label for="keep_audio">Keep original audio</label>
                 </div>
                 <div class="checkbox-item">
-                    <input type="checkbox" name="boxes" id="boxes" value="on">
+                    <input type="checkbox" name="boxes"         id="boxes"         value="on">
                     <label for="boxes">Use rectangular boxes</label>
                 </div>
                 <div class="checkbox-item">
-                    <input type="checkbox" name="draw_scores" id="draw_scores" value="on">
+                    <input type="checkbox" name="draw_scores"   id="draw_scores"   value="on">
                     <label for="draw_scores">Draw detection scores</label>
                 </div>
                 <div class="checkbox-item">
@@ -426,6 +323,7 @@
             </div>
 
             <button type="submit" class="submit-btn" id="submitBtn">🎭 Anonymize Video</button>
+            <div class="error-box" id="errorBox"></div>
 
         </form>
     </div>
@@ -464,34 +362,101 @@ Available values:
     </div>
 
     <script>
-        document.getElementById('fileInput').addEventListener('change', function() {
+        document.getElementById('fileInput').addEventListener('change', function () {
             document.getElementById('fileName').textContent =
                 this.files[0] ? this.files[0].name : 'No file selected';
         });
 
-        document.querySelectorAll('input[name="replacewith"]').forEach(function(radio) {
-            radio.addEventListener('change', function() {
-                const mosaicRow = document.getElementById('mosaicRow');
-                if (this.value === 'mosaic') {
-                    mosaicRow.classList.add('visible');
-                } else {
-                    mosaicRow.classList.remove('visible');
-                }
+        document.querySelectorAll('input[name="replacewith"]').forEach(function (radio) {
+            radio.addEventListener('change', function () {
+                document.getElementById('mosaicRow').classList.toggle('visible', this.value === 'mosaic');
             });
         });
 
         function toggleAdvanced() {
-            const section = document.getElementById('advSection');
-            const icon = document.getElementById('advIcon');
+            var section = document.getElementById('advSection');
+            var icon    = document.getElementById('advIcon');
             section.classList.toggle('visible');
             icon.textContent = section.classList.contains('visible') ? '▲' : '▼';
         }
 
-        document.getElementById('mainForm').addEventListener('submit', function() {
-            document.getElementById('loadingOverlay').classList.add('visible');
-            document.getElementById('submitBtn').disabled = true;
+        document.getElementById('mainForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            document.getElementById('errorBox').style.display = 'none';
+            document.getElementById('submitBtn').disabled    = true;
             document.getElementById('submitBtn').textContent = 'Processing...';
+            document.getElementById('loadingOverlay').classList.add('visible');
+            document.getElementById('pTime').textContent = 'Uploading video...';
+
+            fetch('/process', { method: 'POST', body: new FormData(this) })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (data.error) { hideOverlay(); showError(data.error); return; }
+                    openProgressStream(data.job_id);
+                })
+                .catch(function () {
+                    hideOverlay();
+                    showError('Upload failed. Please try again.');
+                });
         });
+
+        function openProgressStream(jobId) {
+            document.getElementById('pTime').textContent = 'Processing...';
+            var es = new EventSource('/progress/' + jobId);
+
+            es.onmessage = function (evt) {
+                var msg = JSON.parse(evt.data);
+
+                if (msg.type === 'progress') {
+                    document.getElementById('pbarFill').style.width = msg.percent + '%';
+                    document.getElementById('pPct').textContent     = msg.percent + '%';
+                    document.getElementById('pFrames').textContent  =
+                        msg.current + ' / ' + msg.total + ' frames';
+                    document.getElementById('pTime').textContent    =
+                        msg.elapsed + ' elapsed, ' + msg.remaining + ' remaining';
+                    document.getElementById('pSpeed').textContent   = msg.speed;
+
+                } else if (msg.type === 'log') {
+                    document.getElementById('pTime').textContent = msg.message;
+
+                } else if (msg.type === 'done') {
+                    es.close();
+                    document.getElementById('pbarFill').style.width = '100%';
+                    document.getElementById('pPct').textContent     = '100%';
+                    document.getElementById('pFrames').textContent  = '';
+                    document.getElementById('pTime').textContent    = 'Done! Redirecting...';
+                    document.getElementById('pSpeed').textContent   = '';
+                    setTimeout(function () {
+                        window.location.href = '/result/' + msg.filename;
+                    }, 800);
+
+                } else if (msg.type === 'error') {
+                    es.close();
+                    hideOverlay();
+                    showError(msg.message || 'Processing failed');
+                }
+            };
+
+            es.onerror = function () {
+                es.close();
+                hideOverlay();
+                showError('Connection lost during processing. Please try again.');
+            };
+        }
+
+        function hideOverlay() {
+            document.getElementById('loadingOverlay').classList.remove('visible');
+            document.getElementById('submitBtn').disabled    = false;
+            document.getElementById('submitBtn').textContent = '🎭 Anonymize Video';
+        }
+
+        function showError(msg) {
+            var box = document.getElementById('errorBox');
+            box.textContent  = msg;
+            box.style.display = 'block';
+            box.scrollIntoView({ behavior: 'smooth' });
+        }
     </script>
 
 </body>
